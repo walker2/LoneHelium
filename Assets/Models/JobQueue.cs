@@ -23,9 +23,12 @@ public class JobQueue
         }
     }
 
-    public void Dequeue()
+    public Job Dequeue()
     {
-        m_jobQueue.Dequeue();
+        if (m_jobQueue.Count == 0)
+            return null;
+        
+        return m_jobQueue.Dequeue();
 
         if (CbJobEnded != null)
         {

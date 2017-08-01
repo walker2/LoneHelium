@@ -12,7 +12,7 @@ public class Job
     // TODO: FIX THIS
     public string JobObjectType { get; private set; }
     
-    public Job(Tile tile, string jobObjectType, Action<Job> cbJobComplete,  float jobTime = 1f)
+    public Job(Tile tile, string jobObjectType, Action<Job> cbJobComplete,  float jobTime = 0.25f)
     {
         Tile = tile;
         JobObjectType = jobObjectType;

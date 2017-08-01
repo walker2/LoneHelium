@@ -54,7 +54,7 @@ public class Tile
         
         // This type of furniture links itself to it's neighbours. Update neighbours by triggering callback
         Tile t = tileData.World.GetTileAt(x, y + 1);
-
+    
         if (t != null)
         {
             t.CbTileTypeChanged(t);
@@ -95,5 +95,12 @@ public class Tile
 
         Furniture = objInstance;
         return true;
+    }
+
+    public bool IsNeighbour(Tile tile, bool includeCornerTiles = false)
+    {
+        return Mathf.Abs (tile.Position.x - this.Position.x) + Mathf.Abs (tile.Position.y - this.Position.y) == 1
+               || (includeCornerTiles && Mathf.Abs (tile.Position.x - this.Position.x) == 1
+                   && Mathf.Abs (tile.Position.y - this.Position.y) == 1);﻿
     }
 }

@@ -50,8 +50,14 @@ TagManager:
   - name: Furniture
     uniqueID: 2935878207
     locked: 0
+  - name: Jobs
+    uniqueID: 1168313069
+    locked: 0
   - name: Inventory
     uniqueID: 2618074681
+    locked: 0
+  - name: Characters
+    uniqueID: 3614219661
     locked: 0
   - name: TileUI
     uniqueID: 609974943

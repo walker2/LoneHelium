@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEditor;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 
@@ -8,11 +6,9 @@ public class FurnitureSpriteController : MonoBehaviour
 {
     public static TileSpriteController Instance { get; private set; }
 
-
     private Dictionary<Furniture, GameObject> m_furnitureGameObjectMap;
 
     private Dictionary<string, Sprite> m_furnitureSprites;
-
 
     private static World World
     {
@@ -34,7 +30,7 @@ public class FurnitureSpriteController : MonoBehaviour
         m_furnitureSprites = new Dictionary<string, Sprite>();
         Sprite[] sprites = Resources.LoadAll<Sprite>("Images/Furniture/");
 
-        Debug.Log("LOADED RESOURCES");
+        Debug.Log("Loaded Furniture Sprites");
         foreach (Sprite sprite in sprites)
         {
             m_furnitureSprites[sprite.name] = sprite;
@@ -52,9 +48,10 @@ public class FurnitureSpriteController : MonoBehaviour
         furnGameObject.transform.position = new Vector3(obj.Tile.Position.x, obj.Tile.Position.y, 0);
         furnGameObject.transform.SetParent(this.transform, true);
 
-        furnGameObject.AddComponent<SpriteRenderer>().sprite = GetSpriteForFurniture(obj);
-        // TODO: We assume that the object must be a wall
-        furnGameObject.GetComponent<SpriteRenderer>().sortingLayerName = "Furniture";
+        var sr = furnGameObject.AddComponent<SpriteRenderer>();
+        sr.sprite = GetSpriteForFurniture(obj);
+        sr.sortingLayerName = "Furniture";
+        sr.sortingOrder = (int) (obj.Tile.Position.x * obj.Tile.Position.y * -2);
 
         obj.CbOnChanged += OnFurnitureObjectChanged;
     }
@@ -89,6 +86,10 @@ public class FurnitureSpriteController : MonoBehaviour
 
         if (t != null && t.Furniture != null && t.Furniture.ObjectType == obj.ObjectType)
         {
+            /*if (m_furnitureGameObjectMap[t.Furniture].name == (obj.ObjectType + "_ES"))
+            {
+                
+            }*/
             suffix += "N";
         }
 
@@ -127,7 +128,7 @@ public class FurnitureSpriteController : MonoBehaviour
         if (m_furnitureSprites.ContainsKey(furnType + "_"))
             return m_furnitureSprites[furnType + "_"];
 
-        
+
         Debug.LogError("GetSpriteForFurniture -- No sprite with name: " + furnType);
         return null;
     }

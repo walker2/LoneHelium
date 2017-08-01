@@ -59,7 +59,7 @@ public class TileSpriteController : MonoBehaviour
         m_tileSprites = new Dictionary<string, Sprite>();
         var sprites = Resources.LoadAll<Sprite>("Images/Tiles/");
 
-        Debug.Log("LOADED RESOURCES");
+        Debug.Log("Loaded Tile Sprites");
         foreach (Sprite sprite in sprites)
         {
             m_tileSprites[sprite.name] = sprite;

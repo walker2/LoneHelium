@@ -106,7 +106,7 @@ public class MouseController : MonoBehaviour
         // Zooming
         Camera.main.orthographicSize -= Camera.main.orthographicSize * Input.GetAxis("Mouse ScrollWheel");
 
-        Camera.main.orthographicSize = Mathf.Clamp(Camera.main.orthographicSize, 3f, 25f);
+        Camera.main.orthographicSize = Mathf.Clamp(Camera.main.orthographicSize, 5f, 25f);
     }
 
     private void CalculateIndexes(ref float start, ref float end)

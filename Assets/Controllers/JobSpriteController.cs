@@ -34,8 +34,7 @@ public class JobSpriteController : MonoBehaviour
         var sr = jobGameObject.AddComponent<SpriteRenderer>();
         sr.sprite = m_fsc.GetSpriteForFurniture(job.JobObjectType);
         sr.color = new Color(0.5f, 1.0f, 0.5f, 0.3f);
-        
-        jobGameObject.GetComponent<SpriteRenderer>().sortingLayerName = "Furniture";
+        sr.sortingLayerName = "Jobs";
 
         job.CbJobComplete += OnJobEnded;
         job.CbJobCancel += OnJobEnded;

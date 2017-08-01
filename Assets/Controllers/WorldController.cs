@@ -23,7 +23,13 @@ public class WorldController : MonoBehaviour
         // Center the camera
         Camera.main.transform.Translate(World.Width / 2f, World.Height / 2f, -10);
     }
-    
+
+    private void Update()
+    {
+        // TODO: Add pause/unpause, speed controls, etc.
+        WorldController.Instance.World.Update(Time.deltaTime);
+    }
+
     public Tile GetTileAtWorldCoord(Vector3 coord)
     {
         int x = Mathf.RoundToInt(coord.x);

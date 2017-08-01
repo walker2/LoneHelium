@@ -7,16 +7,18 @@ public class World
 {
     private Tile[,] m_tiles;
 
+    private List<Character> m_characters;
     private Dictionary<string, Furniture> m_furniturePrototypes;
-    
+
     public int Width { get; private set; }
     public int Height { get; private set; }
 
     public event Action<Furniture> CbFurnitureCreated;
+    public event Action<Character> CbCharacterCreated; 
     public event Action<Tile> CbTileChanged;
 
     public JobQueue JobQueue;
-   
+
 
     public World(int width = 100, int height = 100)
     {
@@ -36,10 +38,29 @@ public class World
         }
 
         Debug.Log("World created with " + (Width * Height) + " tiles");
-        
+
         CreateFurniturePrototypes();
+
+        m_characters = new List<Character>();
     }
 
+    public void Update(float deltaTime)
+    {
+        foreach (var character in m_characters)
+        {
+            character.Update(deltaTime);
+        }
+    }
+
+    public Character CreateCharacter(Tile tile)
+    {
+        var chr = new Character(m_tiles[Width / 2, Height / 2]);
+        m_characters.Add(chr);
+        if (CbCharacterCreated != null) 
+            CbCharacterCreated(chr);
+
+        return chr;
+    }
     private void CreateFurniturePrototypes()
     {
         m_furniturePrototypes =
@@ -48,7 +69,6 @@ public class World
                 {"Walls", Furniture.CreatePrototype("Walls", 0f, 1, 1, true)},
                 {"Door", Furniture.CreatePrototype("Door", 1f, 1, 1, true)}
             };
-
     }
 
     public void RandomizeTiles()
@@ -62,10 +82,12 @@ public class World
             }
         }
     }
+
     public Tile GetTileAt(float x, float y)
     {
         return GetTileAt((int) x, (int) y);
     }
+
     public Tile GetTileAt(int x, int y)
     {
         if (x >= Width || x < 0 || y >= Height || y < 0)
@@ -94,7 +116,7 @@ public class World
             // Failed to place object
             return;
         }
-        
+
         if (CbFurnitureCreated != null)
         {
             CbFurnitureCreated(obj);
@@ -105,7 +127,7 @@ public class World
     {
         if (CbTileChanged == null)
             return;
-        
+
         CbTileChanged(t);
     }
 
@@ -118,10 +140,11 @@ public class World
     {
         if (m_furniturePrototypes.ContainsKey(furnType) == false)
         {
-            Debug.LogError("GetFurniturePrototype -- m_furniturePrototypes doesn't contain furniture type: " + furnType);
+            Debug.LogError("GetFurniturePrototype -- m_furniturePrototypes doesn't contain furniture type: " +
+                           furnType);
             return null;
         }
-        
+
         return m_furniturePrototypes[furnType];
     }
 }
