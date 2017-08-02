@@ -30,10 +30,10 @@ public class JobQueue
         
         return m_jobQueue.Dequeue();
 
-        if (CbJobEnded != null)
+        /*if (CbJobEnded != null)
         {
             //CbJobEnded;
-        }
+        }*/
         
     }
 }

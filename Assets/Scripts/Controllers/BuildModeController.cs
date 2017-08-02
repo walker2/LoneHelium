@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Pathfinding;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -45,6 +46,11 @@ public class BuildModeController : MonoBehaviour
         }
     }
 
+    public void SetupPathfindingTestExample()
+    {
+        WorldController.Instance.World.SetupPathfindingTestExample();
+    }
+    
     public void SetMode_BuildFloor()
     {
         BuildModeIsObjects = false;

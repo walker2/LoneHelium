@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Pathfinding;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -9,6 +10,7 @@ public class World
 
     private List<Character> m_characters;
     private Dictionary<string, Furniture> m_furniturePrototypes;
+    private TileGraph m_tileGraph;
 
     public int Width { get; private set; }
     public int Height { get; private set; }
@@ -83,6 +85,30 @@ public class World
         }
     }
 
+    public void SetupPathfindingTestExample()
+    {
+        Debug.Log("SetupPathfindingTestExample");
+
+        int l = Width / 2 - 5;
+        int b = Height / 2 - 5;
+        
+        for (int x = l - 5; x < l + 15; x++)
+        {
+            for (int y = b - 5; y < b + 15; y++)
+            {
+                m_tiles[x, y].Type = TileType.GroundTiles;
+
+                if (x == 1 || x == (l + 9) || y == b || y == (b + 9))
+                {
+                    if (x != (l + 5) && y != (b + 4))
+                    {
+                        PlaceFurniture("Walls", m_tiles[x, y]);
+                    }
+                }
+            }   
+        }
+    }
+
     public Tile GetTileAt(float x, float y)
     {
         return GetTileAt((int) x, (int) y);
@@ -98,7 +124,7 @@ public class World
 
         return m_tiles[x, y];
     }
-
+    
     public void PlaceFurniture(string objectType, Tile t)
     {
         // TODO: Only 1 x 1 tiles
@@ -120,7 +146,9 @@ public class World
         if (CbFurnitureCreated != null)
         {
             CbFurnitureCreated(obj);
+            InvalidateTileGraph();
         }
+        
     }
 
     private void OnTileChanged(Tile t)
@@ -129,6 +157,12 @@ public class World
             return;
 
         CbTileChanged(t);
+        InvalidateTileGraph();
+    }
+
+    private void InvalidateTileGraph()
+    {
+        m_tileGraph = null;
     }
 
     public bool IsFurniturePlacementValid(string furnType, Tile t)

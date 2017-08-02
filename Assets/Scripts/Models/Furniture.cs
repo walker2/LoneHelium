@@ -8,7 +8,7 @@ public class Furniture
 
     // This is a multiplier. So value of "2" slows down twice as much. 
     // If equals 0, then it's impassable
-    protected float MovementCost;
+    public float MovementCost { get; protected set; }
 
     protected int Width;
     protected int Height;
@@ -48,8 +48,8 @@ public class Furniture
             Debug.LogError("PlaceInstance -- Position validity function returned FALSE; ");
             return null;
         }
-        
-        
+
+
         Furniture obj = new Furniture
         {
             ObjectType = prototype.ObjectType,
@@ -96,7 +96,6 @@ public class Furniture
             {
                 t.Furniture.CbOnChanged(t.Furniture);
             }
-            
         }
 
         return obj;
@@ -119,7 +118,7 @@ public class Furniture
         {
             return false;
         }
-        
+
         return true;
     }
 
@@ -127,7 +126,7 @@ public class Furniture
     {
         if (__IsValidPosition(tile) == false)
             return false;
-        
+
         // Make sure we have a pair walls 
         return true;
     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Character
@@ -12,7 +13,7 @@ public class Character
                 Mathf.Lerp(CurrTile.Position.y, DestTile.Position.y, m_movementPercentage));
         }
     }
-
+    
     public Tile CurrTile { get; private set; }
     public Tile DestTile { get; private set; } // If we aren't moving, then dest = curr
     private float m_movementPercentage;
@@ -65,10 +66,9 @@ public class Character
 
         if (m_movementPercentage >= 1.0f)
         {
+            // TODO: Get next tile from pathFinding system
             CurrTile = DestTile;
             m_movementPercentage = 0;
-
-            // TODO: Do we actually want to retain overshot movement?
         }
 
         if (CbCharacterChanged != null)

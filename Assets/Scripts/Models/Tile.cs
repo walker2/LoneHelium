@@ -38,6 +38,20 @@ public class Tile
 
     public Vector2 Position { get; private set; }
 
+    public float MovementCost
+    {
+        get
+        {
+            if (Type == TileType.Empty)
+                return 0; // 0 is unwalkable
+
+            if (Furniture == null)
+                return 1;
+
+            return Furniture.MovementCost;
+        }
+    }
+
     public Tile(World world, Vector2 position)
     {
         World = world;
@@ -48,13 +62,13 @@ public class Tile
     {
         tileData.Type = tileType;
         tileData.CbTileTypeChanged(tileData);
-        
+
         int x = Mathf.RoundToInt(tileData.Position.x);
         int y = Mathf.RoundToInt(tileData.Position.y);
-        
+
         // This type of furniture links itself to it's neighbours. Update neighbours by triggering callback
         Tile t = tileData.World.GetTileAt(x, y + 1);
-    
+
         if (t != null)
         {
             t.CbTileTypeChanged(t);
@@ -78,7 +92,7 @@ public class Tile
             t.CbTileTypeChanged(t);
         }
     }
-    
+
     public bool PlaceObject(Furniture objInstance)
     {
         if (objInstance == null)
@@ -97,10 +111,32 @@ public class Tile
         return true;
     }
 
-    public bool IsNeighbour(Tile tile, bool includeCornerTiles = false)
+    public bool IsNeighbour(Tile tile, bool includeCorner = false)
     {
-        return Mathf.Abs (tile.Position.x - this.Position.x) + Mathf.Abs (tile.Position.y - this.Position.y) == 1
-               || (includeCornerTiles && Mathf.Abs (tile.Position.x - this.Position.x) == 1
-                   && Mathf.Abs (tile.Position.y - this.Position.y) == 1);﻿
+        return Mathf.Abs(tile.Position.x - this.Position.x) + Mathf.Abs(tile.Position.y - this.Position.y) == 1
+               || (includeCorner && Mathf.Abs(tile.Position.x - this.Position.x) == 1
+                   && Mathf.Abs(tile.Position.y - this.Position.y) == 1);
+    }
+
+    public Tile[] GetNeighbours(bool includeCorner = false)
+    {
+        // Tile order [N E S W]<NE SE SW NW>
+        //Tile[] ns = includeCorner == false ? new Tile[4] : new Tile[8];
+
+        var tiles = new Tile[10];
+        tiles[0] = World.GetTileAt(Position.x, Position.y + 1);
+        tiles[1] = World.GetTileAt(Position.x + 1, Position.y);
+        tiles[2] = World.GetTileAt(Position.x, Position.y - 1);
+        tiles[3] = World.GetTileAt(Position.x - 1, Position.y);
+
+        if (includeCorner)
+        {
+            tiles[4] = World.GetTileAt(Position.x + 1, Position.y + 1);
+            tiles[5] = World.GetTileAt(Position.x + 1, Position.y - 1);
+            tiles[6] = World.GetTileAt(Position.x - 1, Position.y - 1);
+            tiles[7] = World.GetTileAt(Position.x - 1, Position.y + 1);
+        }
+
+        return tiles;
     }
 }
