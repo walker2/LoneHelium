@@ -25,6 +25,9 @@ public class MouseOverFurnitureText : MonoBehaviour
     void Update()
     {
         Tile tile = MouseController.GetTileUnderMouse();
+        
+        if (tile == null)
+            return;
 
         var s = "null";
         if (tile.Furniture != null)

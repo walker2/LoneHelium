@@ -25,6 +25,8 @@ public class MouseOverRoomIDText : MonoBehaviour
     void Update()
     {
         Tile tile = MouseController.GetTileUnderMouse();
+        if (tile == null)
+            return;
         m_text.SetText("Room ID: " + tile.World.RoomList.IndexOf(tile.Room).ToString());
     }
 }
