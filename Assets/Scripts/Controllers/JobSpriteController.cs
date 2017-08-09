@@ -8,7 +8,7 @@ public class JobSpriteController : MonoBehaviour
     private Dictionary<Job, GameObject> m_jobGameObjectMap;
 
     // Use this for initialization
-    void Start()
+    private void Start()
     {
         m_jobGameObjectMap = new Dictionary<Job, GameObject>();
         m_fsc = GameObject.FindObjectOfType<FurnitureSpriteController>();
@@ -22,7 +22,13 @@ public class JobSpriteController : MonoBehaviour
         // TODO: We can only do furniture-building
 
         // TODO: Does not consider multitiled object nor object rotation
-
+        
+        if (m_jobGameObjectMap.ContainsKey(job))
+        {
+            Debug.LogError("OnJobCreated for a jobGameObject that already exists -- most likely a job being RE-QUEUED");
+            return;
+        } 
+        
         var jobGameObject =
             new GameObject("JOB_" + job.JobObjectType + "_" + job.Tile.Position.x + "_" + job.Tile.Position.y);
 

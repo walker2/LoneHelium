@@ -50,6 +50,9 @@ TagManager:
   - name: Furniture
     uniqueID: 2935878207
     locked: 0
+  - name: Door
+    uniqueID: 380316607
+    locked: 0
   - name: Jobs
     uniqueID: 1168313069
     locked: 0

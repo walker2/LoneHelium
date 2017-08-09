@@ -6,11 +6,11 @@ namespace Pathfinding
     public class TileGraph
     {
         // This class constructs a simple pathfinding graph of our world.
-        private Dictionary<Tile, Node<Tile>> m_nodes;
+        public Dictionary<Tile, Node<Tile>> Nodes;
 
         public TileGraph(World world)
         {
-            m_nodes = new Dictionary<Tile, Node<Tile>>();
+            Nodes = new Dictionary<Tile, Node<Tile>>();
             // For each tile create a node 
             for (int x = 0; x < world.Width; x++)
             {
@@ -18,23 +18,21 @@ namespace Pathfinding
                 {
                     Tile t = world.GetTileAt(x, y);
 
-                    if (t.MovementCost > 0f)
+                    //if (t.MovementCost > 0f)
+                    //{
+                    var node = new Node<Tile>
                     {
-                        var node = new Node<Tile>
-                        {
-                            Data = t
-                        };
+                        Data = t
+                    };
 
-                        m_nodes.Add(t, node);
-                        Debug.DrawLine(new Vector3(x - 0.1f, y - 0.25f, 0), new Vector3(x + 0.1f, y + 0.25f, 0), Color.red,
-                            999f);
-                    }
+                    Nodes.Add(t, node);
+                    //}
                 }
             }
 
-            foreach (Tile t in m_nodes.Keys)
+            foreach (Tile t in Nodes.Keys)
             {
-                Node<Tile> node = m_nodes[t];
+                Node<Tile> node = Nodes[t];
 
                 var edges = new List<Edge<Tile>>();
 
@@ -44,17 +42,15 @@ namespace Pathfinding
                 // If neighbour is walkable -- create an edge with movement cost
                 foreach (Tile neighbourTile in tiles)
                 {
-                    if (neighbourTile != null && neighbourTile.MovementCost > 0)
+                    if (neighbourTile != null && neighbourTile.MovementCost > 0 && t.IsClippingCorner(neighbourTile) == false)
                     {
                         var edge = new Edge<Tile>
                         {
                             Cost = neighbourTile.MovementCost,
-                            Node = m_nodes[neighbourTile]
+                            Node = Nodes[neighbourTile]
                         };
 
                         edges.Add(edge);
-                        Debug.DrawLine(new Vector3(t.Position.x, t.Position.y, 0),
-                            new Vector3(edge.Node.Data.Position.x, edge.Node.Data.Position.y, 0), Color.green, 999f);
                     }
                 }
 

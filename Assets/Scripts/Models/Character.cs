@@ -1,21 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Xml;
+using System.Xml.Schema;
+using System.Xml.Serialization;
+using Pathfinding;
 using UnityEngine;
 
-public class Character
+public class Character : IXmlSerializable
 {
     public Vector2 Position
     {
         get
         {
             return new Vector2(
-                Mathf.Lerp(CurrTile.Position.x, DestTile.Position.x, m_movementPercentage),
-                Mathf.Lerp(CurrTile.Position.y, DestTile.Position.y, m_movementPercentage));
+                Mathf.Lerp(CurrTile.Position.x, m_nextTile.Position.x, m_movementPercentage),
+                Mathf.Lerp(CurrTile.Position.y, m_nextTile.Position.y, m_movementPercentage));
         }
     }
-    
+
     public Tile CurrTile { get; private set; }
     public Tile DestTile { get; private set; } // If we aren't moving, then dest = curr
+
+    private Tile m_nextTile; // Next tile in pathfinding sequence 
+    private AStar m_pathAStar;
     private float m_movementPercentage;
 
     public float Speed = 12.0f; // Tiles per second
@@ -27,13 +34,12 @@ public class Character
 
     public Character(Tile tile)
     {
-        CurrTile = DestTile = tile;
+        CurrTile = DestTile = m_nextTile = tile;
     }
 
-    public void Update(float deltaTime)
+    private void DoJob(float deltaTime)
     {
         // Do I have a job?
-
         if (m_job == null)
         {
             // Grab a new job
@@ -53,12 +59,67 @@ public class Character
             {
                 m_job.DoWork(deltaTime);
             }
+        }
+    }
+
+    public void AbandonJob()
+    {
+        m_nextTile = DestTile = CurrTile;
+        m_pathAStar = null;
+        CurrTile.World.JobQueue.Enqueue(m_job);
+        m_job = null;
+    }
+
+    private void Move(float deltaTime)
+    {
+        if (CurrTile == DestTile)
+        {
+            m_pathAStar = null;
             return;
         }
 
-        float distanceToTravel = Vector2.Distance(CurrTile.Position, DestTile.Position);
+        if (m_nextTile == null || m_nextTile == CurrTile)
+        {
+            if (m_pathAStar == null || m_pathAStar.Length() == 0)
+            {
+                // Generate the path 
+                m_pathAStar = new AStar(CurrTile.World, CurrTile, DestTile);
+                if (m_pathAStar.Length() == 0)
+                {
+                    Debug.LogError("AStar -- returned no path to destination");
+                    // TODO: Cancel Job? Should be re-enqueued 
+                    AbandonJob();
+                    m_pathAStar = null;
+                    return;
+                }
+                m_nextTile = m_pathAStar.Dequeue();
+            }
 
-        float distanceThisFrame = Speed * deltaTime;
+            // Grap the next Node from path
+            m_nextTile = m_pathAStar.Dequeue();
+
+            if (m_nextTile == CurrTile)
+                Debug.LogError("Character::Move -- next Tile is currTile");
+        }
+
+
+        float distanceToTravel = Vector2.Distance(CurrTile.Position, m_nextTile.Position);
+
+        if (m_nextTile.IsEnterable() == EnterState.Never)
+        {
+            Debug.LogError("FIXME: A character was trying to enter unwalkable tile");
+            m_nextTile = null;
+            m_pathAStar = null;
+            return;
+        }
+
+        if (m_nextTile.IsEnterable() == EnterState.Soon)
+        {
+            return;
+        }
+        
+        
+        float distanceThisFrame = Speed / m_nextTile.MovementCost * deltaTime;
 
         float percThisFrame = distanceThisFrame / distanceToTravel;
 
@@ -67,9 +128,15 @@ public class Character
         if (m_movementPercentage >= 1.0f)
         {
             // TODO: Get next tile from pathFinding system
-            CurrTile = DestTile;
+            CurrTile = m_nextTile;
             m_movementPercentage = 0;
         }
+    }
+
+    public void Update(float deltaTime)
+    {
+        DoJob(deltaTime);
+        Move(deltaTime);
 
         if (CbCharacterChanged != null)
             CbCharacterChanged(this);
@@ -96,5 +163,29 @@ public class Character
             return;
         }
         m_job = null;
+    }
+
+    /*******************************************************/
+    /*                  FOR XML SERIALIZATON               */
+    /*******************************************************/
+
+    public Character()
+    {
+    }
+
+    public XmlSchema GetSchema()
+    {
+        return null;
+    }
+
+    public void ReadXml(XmlReader reader)
+    {
+        return;
+    }
+
+    public void WriteXml(XmlWriter writer)
+    {
+        writer.WriteAttributeString("x", CurrTile.Position.x.ToString());
+        writer.WriteAttributeString("y", CurrTile.Position.y.ToString());
     }
 }

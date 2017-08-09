@@ -7,7 +7,7 @@ using UnityEngine.EventSystems;
 public class BuildModeController : MonoBehaviour
 {
     protected bool BuildModeIsObjects = false;
-    protected TileType BuildModeTileType = TileType.GroundTiles;
+    protected TileType BuildModeTileType = TileType.Ground;
     protected string BuildModeObjectType;
 
     public void DoBuild(Tile t)
@@ -54,7 +54,7 @@ public class BuildModeController : MonoBehaviour
     public void SetMode_BuildFloor()
     {
         BuildModeIsObjects = false;
-        BuildModeTileType = TileType.GroundTiles;
+        BuildModeTileType = TileType.Ground;
     }
 
     public void SetMode_Destroy()

@@ -47,6 +47,7 @@ public class TileSpriteController : MonoBehaviour
                 {
                     tileGO.AddComponent<SpriteRenderer>().sprite = null;
                 }
+                OnTileChanged(tileData);
             }
         }
 
@@ -89,7 +90,7 @@ public class TileSpriteController : MonoBehaviour
     {
         if (tileData.Type == TileType.Empty)
             return null;
-
+        
         string spriteName = tileData.Type + "_";
         var suffix = "";
         int x = Mathf.RoundToInt(tileData.Position.x);
@@ -129,18 +130,7 @@ public class TileSpriteController : MonoBehaviour
             }
         }
         spriteName += suffix;
-
-        /*if (!suffix.Contains("S"))
-        {
-            t = m_world.GetTileAt(x, y - 1);
-            if (t.Type == TileType.Empty)
-            {
-                var tileGO = m_tileGameObjectMap[t];
-                tileGO.GetComponent<SpriteRenderer>().sprite = m_tileSprites[spriteName + "B"];
-            }
-        }*/
-            
-
+          
         if (m_tileSprites.ContainsKey(spriteName) == false)
         {
             Debug.LogError("GetSpriteForTile -- No sprite with name: " + spriteName);

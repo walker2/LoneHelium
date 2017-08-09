@@ -22,6 +22,11 @@ public class FurnitureSpriteController : MonoBehaviour
         m_furnitureGameObjectMap = new Dictionary<Furniture, GameObject>();
 
         World.CbFurnitureCreated += OnFurnitureCreated;
+
+        foreach (Furniture furniture in World.FurnitureList)
+        {
+            OnFurnitureCreated(furniture);
+        }
     }
 
     private void LoadSprites()
@@ -37,76 +42,133 @@ public class FurnitureSpriteController : MonoBehaviour
         }
     }
 
-    private void OnFurnitureCreated(Furniture obj)
+    private void OnFurnitureCreated(Furniture furniture)
     {
         // TODO: Does not consider multitiled object nor object rotation
 
-        var furnGameObject = new GameObject(obj.ObjectType + "_" + obj.Tile.Position.x + "_" + obj.Tile.Position.y);
+        var furnGameObject =
+            new GameObject(furniture.ObjectType + "_" + furniture.Tile.Position.x + "_" + furniture.Tile.Position.y);
 
-        m_furnitureGameObjectMap.Add(obj, furnGameObject);
+        m_furnitureGameObjectMap.Add(furniture, furnGameObject);
 
-        furnGameObject.transform.position = new Vector3(obj.Tile.Position.x, obj.Tile.Position.y, 0);
+        furnGameObject.transform.position = new Vector3(furniture.Tile.Position.x, furniture.Tile.Position.y, 0);
         furnGameObject.transform.SetParent(this.transform, true);
 
         var sr = furnGameObject.AddComponent<SpriteRenderer>();
-        sr.sprite = GetSpriteForFurniture(obj);
-        sr.sortingLayerName = "Furniture";
-        sr.sortingOrder = (int) (obj.Tile.Position.x * obj.Tile.Position.y * -2);
+        sr.sprite = GetSpriteForFurniture(furniture);
+        sr.sortingLayerName = furniture.ObjectType == "Door" ? "Door" : "Furniture";
+        sr.sortingOrder = (int) (furniture.Tile.Position.y * -2);
 
-        obj.CbOnChanged += OnFurnitureObjectChanged;
+        furniture.CbOnChanged += OnFurnitureObjectChanged;
     }
 
-    private void OnFurnitureObjectChanged(Furniture obj)
+    private void OnFurnitureObjectChanged(Furniture furniture)
     {
         // Make sure the furniture's graphics are correct 
-        if (m_furnitureGameObjectMap.ContainsKey(obj) == false)
+        if (m_furnitureGameObjectMap.ContainsKey(furniture) == false)
         {
             Debug.LogError("OnFurnitureObjectChanged " +
                            "-- Trying to change visuals for furniture that not in map m_furnitureGameObjectMap");
             return;
         }
 
-        GameObject furnGameObject = m_furnitureGameObjectMap[obj];
-        furnGameObject.GetComponent<SpriteRenderer>().sprite = GetSpriteForFurniture(obj);
+        GameObject furnGameObject = m_furnitureGameObjectMap[furniture];
+        furnGameObject.GetComponent<SpriteRenderer>().sprite = GetSpriteForFurniture(furniture);
     }
 
-    public Sprite GetSpriteForFurniture(Furniture obj)
+    public Sprite GetSpriteForFurniture(Furniture furniture)
     {
-        if (obj.LinksToNeighbour == false)
+        // If this is a DOOR, check it's openness and update the sprite
+        // TODO: Fix this hardcoding
+
+
+        string spriteName = furniture.ObjectType + "_";
+        var suffix = "";
+        int x = Mathf.RoundToInt(furniture.Tile.Position.x);
+        int y = Mathf.RoundToInt(furniture.Tile.Position.y);
+
+        if (furniture.ObjectType == "Door")
         {
-            return m_furnitureSprites[obj.ObjectType];
+            Tile tileN = World.GetTileAt(x, y + 1);
+            Tile tileS = World.GetTileAt(x, y - 1);
+            Tile tileE = World.GetTileAt(x + 1, y);
+            Tile tileW = World.GetTileAt(x - 1, y);
+
+            if (tileN != null && tileS != null &&
+                tileN.Furniture != null && tileS.Furniture != null &&
+                tileN.Furniture.ObjectType == "Wall" &&
+                tileS.Furniture.ObjectType == "Wall")
+            {
+                suffix += "vert_";
+            }
+            else if (tileE != null && tileW != null &&
+                     tileE.Furniture != null && tileW.Furniture != null &&
+                     tileE.Furniture.ObjectType == "Wall" &&
+                     tileW.Furniture.ObjectType == "Wall")
+            {
+                suffix += "hor_";
+            }
+            else
+            {
+                Debug.Log("You can't build door here");
+                furniture = null;
+                return null;
+            }
+                
+            if (furniture.FurnParameters["openness"] < 0.1f)
+            {
+                // Door is closed 
+                suffix += "closed";
+                //return m_furnitureSprites[furniture.ObjectType];
+            }
+            else if (furniture.FurnParameters["openness"] < 0.5f)
+            {
+                // Door is opening 
+                suffix += "opening";
+                //return m_furnitureSprites[furniture.ObjectType + "_opening"];
+            }
+            else
+            {
+                suffix += "open";
+            }
+            spriteName += suffix;
+
+            if (m_furnitureSprites.ContainsKey(spriteName) == false)
+            {
+                Debug.LogError("GetSpriteForFurniture -- No sprite with name: " + spriteName);
+                return null;
+            }
+
+            return m_furnitureSprites[spriteName];
         }
 
-        string spriteName = obj.ObjectType + "_";
-        var suffix = "";
-        int x = Mathf.RoundToInt(obj.Tile.Position.x);
-        int y = Mathf.RoundToInt(obj.Tile.Position.y);
+        if (furniture.LinksToNeighbour == false)
+        {
+            return m_furnitureSprites[furniture.ObjectType];
+        }
+
 
         Tile t = World.GetTileAt(x, y + 1);
 
-        if (t != null && t.Furniture != null && t.Furniture.ObjectType == obj.ObjectType)
+        if (t != null && t.Furniture != null && t.Furniture.ObjectType == furniture.ObjectType)
         {
-            /*if (m_furnitureGameObjectMap[t.Furniture].name == (obj.ObjectType + "_ES"))
-            {
-                
-            }*/
             suffix += "N";
         }
 
         t = World.GetTileAt(x + 1, y);
-        if (t != null && t.Furniture != null && t.Furniture.ObjectType == obj.ObjectType)
+        if (t != null && t.Furniture != null && t.Furniture.ObjectType == furniture.ObjectType)
         {
             suffix += "E";
         }
 
         t = World.GetTileAt(x, y - 1);
-        if (t != null && t.Furniture != null && t.Furniture.ObjectType == obj.ObjectType)
+        if (t != null && t.Furniture != null && t.Furniture.ObjectType == furniture.ObjectType)
         {
             suffix += "S";
         }
 
         t = World.GetTileAt(x - 1, y);
-        if (t != null && t.Furniture != null && t.Furniture.ObjectType == obj.ObjectType)
+        if (t != null && t.Furniture != null && t.Furniture.ObjectType == furniture.ObjectType)
         {
             suffix += "W";
         }
@@ -127,7 +189,6 @@ public class FurnitureSpriteController : MonoBehaviour
 
         if (m_furnitureSprites.ContainsKey(furnType + "_"))
             return m_furnitureSprites[furnType + "_"];
-
 
         Debug.LogError("GetSpriteForFurniture -- No sprite with name: " + furnType);
         return null;
